@@ -109,6 +109,16 @@
       .call-btn { background: var(--primary-dark); color: white; }
       .text-btn { background: var(--primary-blue); color: white; }
       .email-btn { background: var(--danger-red); color: white; }
+      
+      .profile-footer {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e9ecef;
+      }
+      .profile-footer img {
+        max-width: 140px;
+        opacity: 0.8;
+      }
 
       /* Location Modal */
       .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000; animation: fadeIn 0.2s ease-in-out; }
@@ -215,38 +225,6 @@
         </div>
 
         <div class="step" id="step-8">
-          <h2 id="label-b10">Loading...</h2>
-          <input type="text" id="b10" oninput="validateStep(8)">
-          <div class="nav-buttons">
-            <button class="back-btn" type="button" onclick="prevStep()">Back</button>
-            <button class="skip-btn" type="button" onclick="skipStep()">Skip</button>
-            <button type="button" id="btn-continue-8" onclick="nextStep()" disabled>Continue</button>
-          </div>
-        </div>
-
-        <div class="step" id="step-9">
-          <h2 id="label-b11">Loading...</h2>
-          <input type="tel" id="b11" placeholder="Enter alternate number..." oninput="validateStep(9)">
-          <input type="tel" id="b11_confirm" placeholder="Re-enter to confirm..." oninput="validateStep(9)" style="margin-top: 10px;">
-          <div class="nav-buttons">
-            <button class="back-btn" type="button" onclick="prevStep()">Back</button>
-            <button class="skip-btn" type="button" onclick="skipStep()">Skip</button>
-            <button type="button" id="btn-continue-9" onclick="nextStep()" disabled>Continue</button>
-          </div>
-        </div>
-
-        <div class="step" id="step-10">
-          <h2 id="label-b12">Loading...</h2>
-          <input type="email" id="b12" placeholder="Enter alternate email..." oninput="validateStep(10)">
-          <input type="email" id="b12_confirm" placeholder="Re-enter to confirm..." oninput="validateStep(10)" style="margin-top: 10px;">
-          <div class="nav-buttons">
-            <button class="back-btn" type="button" onclick="prevStep()">Back</button>
-            <button class="skip-btn" type="button" onclick="skipStep()">Skip</button>
-            <button type="button" id="btn-continue-10" onclick="nextStep()" disabled>Continue</button>
-          </div>
-        </div>
-
-        <div class="step" id="step-11">
           <h1>All Set!</h1>
           <p style="margin-bottom: 24px; font-size: 1.1rem; color: #444;">You've completed all the steps. Click below to securely save and activate this PawTap profile.</p>
           <div class="nav-buttons">
@@ -267,15 +245,15 @@
       <div id="infoSection" class="info-section">
         <div id="infoMannerisms" class="info-item"></div>
         <div id="infoAddress" class="info-item"></div>
-        <div id="infoMicrochip" class="info-item"></div>
-        <div id="infoOpt1" class="info-item"></div>
-        <div id="infoOpt2" class="info-item"></div>
-        <div id="infoOpt3" class="info-item"></div>
       </div>
 
       <a href="#" id="callBtn" class="action-btn call-btn">Call Owner</a>
       <button id="textBtn" class="action-btn text-btn">Text Owner</button>
       <button id="emailBtn" class="action-btn email-btn">Email Owner</button>
+      
+      <div class="profile-footer">
+        <img src="PawTapFinal.png" alt="PawTap Logo" onerror="this.style.display='none';">
+      </div>
     </div>
 
     <!-- Location Request Modal -->
@@ -289,8 +267,7 @@
     </div>
 
     <script>
-      // The single API Endpoint for all operations
-      const API_URL = "https://script.google.com/macros/s/AKfycbwWSLxwC_2odtAIICMdKdte-N0luse9jIH87lwp4IXzQZUQcT0SUYx9U5QdgJvP49fxqA/exec"; 
+      const API_URL = "https://script.google.com/macros/s/AKfycbz7ui9OMznxWl9EaoKKoyuWOZ2m9B_dGt_gxPEixYYxjaMU2-76WmD99l7X9nNnUfnVSQ/exec"; 
 
       // Profile State
       let petNameCache = "A LOST PET";
@@ -300,11 +277,10 @@
       let currentLng = null;
       let pendingAction = null; 
 
-      // Setup Wizard State
+      // Setup Wizard State - 8 total steps
       let currentStep = 0;
-      const totalSteps = 11;
+      const totalSteps = 8;
 
-      // --- INITIALIZATION ---
       async function apiRequest(payload) {
         const response = await fetch(API_URL, {
           method: 'POST',
@@ -316,28 +292,21 @@
 
       window.onload = async function() {
         try {
-          // Check if the spreadsheet is empty or full
           const statusResult = await apiRequest({ action: 'checkStatus' });
           
           if (statusResult.success) {
             if (statusResult.isEmpty) {
-              // SPREADSHEET IS EMPTY -> LAUNCH SETUP WIZARD
               document.getElementById('loadingSpinner').style.display = 'none';
               
-              // Populate Setup Labels from Column A
               document.getElementById('label-b3').innerText = statusResult.labels[0] || "Pet Name";
               document.getElementById('label-b5').innerText = statusResult.labels[2] || "Mannerisms";
               document.getElementById('label-b6').innerText = statusResult.labels[3] || "Address";
               document.getElementById('label-b7').innerText = statusResult.labels[4] || "Owner Name";
               document.getElementById('label-b8').innerText = statusResult.labels[5] || "Phone Number";
               document.getElementById('label-b9').innerText = statusResult.labels[6] || "Email Address";
-              document.getElementById('label-b10').innerText = statusResult.labels[7] || "Optional 1";
-              document.getElementById('label-b11').innerText = statusResult.labels[8] || "Alt Phone Number";
-              document.getElementById('label-b12').innerText = statusResult.labels[9] || "Alt Email Address";
 
               document.getElementById('setupWizard').style.display = 'block';
             } else {
-              // SPREADSHEET IS FULL -> LAUNCH ACTIVATED PROFILE
               loadAndShowProfile();
             }
           }
@@ -385,14 +354,6 @@
           const b9 = document.getElementById('b9').value.trim();
           const b9c = document.getElementById('b9_confirm').value.trim();
           continueBtn.disabled = (b9 === '' || b9 !== b9c);
-        } else if (stepIndex === 9) { 
-          const b11 = document.getElementById('b11').value.trim();
-          const b11c = document.getElementById('b11_confirm').value.trim();
-          continueBtn.disabled = (b11 === '' || b11 !== b11c);
-        } else if (stepIndex === 10) { 
-          const b12 = document.getElementById('b12').value.trim();
-          const b12c = document.getElementById('b12_confirm').value.trim();
-          continueBtn.disabled = (b12 === '' || b12 !== b12c);
         } else {
           const currentDiv = document.getElementById('step-' + stepIndex);
           const textInput = currentDiv.querySelector('input[type="text"], input[type="tel"], input[type="email"]');
@@ -418,13 +379,6 @@
         if (currentStep < totalSteps) { currentStep++; showStep(currentStep); }
       }
 
-      function skipStep() {
-        const currentDiv = document.getElementById('step-' + currentStep);
-        const inputs = currentDiv.querySelectorAll('input[type="text"], input[type="tel"], input[type="email"]');
-        if (inputs) inputs.forEach(input => input.value = "");
-        if (currentStep < totalSteps) { currentStep++; showStep(currentStep); }
-      }
-
       function getSelectedMannerisms() {
         const checkboxes = document.querySelectorAll('input[name="mannerism"]:checked');
         let values = [];
@@ -441,7 +395,6 @@
         });
       }
 
-      // OpenStreetMap Autocomplete
       const addressInput = document.getElementById('b6');
       let addressTimeout = null;
       addressInput.addEventListener('input', function() {
@@ -480,7 +433,6 @@
       }
       document.addEventListener("click", function (e) { closeAllLists(e.target); });
 
-      // Save Data and Transition to Profile
       async function submitForm() {
         const btn = document.getElementById('submitBtn');
         btn.innerText = 'Saving Profile...';
@@ -500,21 +452,19 @@
             b7: document.getElementById('b7').value,
             b8: document.getElementById('b8').value,
             b9: document.getElementById('b9').value,
-            b10: document.getElementById('b10').value,
-            b11: document.getElementById('b11').value,
-            b12: document.getElementById('b12').value
+            b10: "", 
+            b11: "",
+            b12: ""
           };
 
           const result = await apiRequest(payload);
 
           if (result.success) {
-            // Setup Complete! Hide wizard, show loading, then fetch/display profile.
             document.getElementById('setupWizard').style.display = 'none';
             document.getElementById('loadingText').innerHTML = "Activating PawTap...";
             document.getElementById('spinnerAnim').style.display = 'block';
             document.getElementById('loadingSpinner').style.display = 'block';
             
-            // Allow a small delay for Google Drive image to fully generate
             setTimeout(loadAndShowProfile, 1500); 
           } else {
             alert('Error saving data: ' + result.error);
@@ -540,19 +490,19 @@
             document.getElementById('profileView').style.display = 'block';
             
             if (contact.petName) {
-              petNameCache = contact.petName.toUpperCase();
+              petNameCache = String(contact.petName).toUpperCase();
               document.getElementById('petNameDisplay').innerHTML = petNameCache;
               document.getElementById('petNameDisplay').style.display = "block";
               document.getElementById('modalText').innerHTML = "Please allow access to your location to help reunite " + contact.petName + " with their owner.";
             }
 
-            if (contact.ownerName && contact.ownerName.trim() !== "") {
+            if (contact.ownerName && String(contact.ownerName).trim() !== "") {
               document.getElementById('subtitleText').innerHTML = "Please use the buttons below to reunite me with my owner, " + contact.ownerName + ".";
             }
             
-            if (contact.photoUrl && contact.photoUrl.trim() !== "") {
+            if (contact.photoUrl && String(contact.photoUrl).trim() !== "") {
               var petPhoto = document.getElementById('profilePetPhoto');
-              let finalUrl = contact.photoUrl;
+              let finalUrl = String(contact.photoUrl);
               if (finalUrl.includes('drive.google.com/uc?id=')) {
                 finalUrl = finalUrl.replace('uc?id=', 'thumbnail?id=') + '&sz=w400';
               }
@@ -562,25 +512,22 @@
 
             let hasExtraInfo = false;
             const appendInfo = (id, label, value) => {
-              if (value && value.trim() !== "") {
-                document.getElementById(id).innerHTML = "<strong>" + label + ":</strong> " + value;
+              let strVal = (value !== null && value !== undefined) ? String(value) : "";
+              if (strVal.trim() !== "") {
+                document.getElementById(id).innerHTML = "<strong>" + label + ":</strong> " + strVal;
                 hasExtraInfo = true;
               }
             };
             
             appendInfo('infoMannerisms', 'Mannerisms', contact.mannerisms);
             appendInfo('infoAddress', 'Home Address', contact.address);
-            appendInfo('infoMicrochip', 'Microchip ID', contact.opt1);
-            appendInfo('infoOpt1', 'Vet Info', contact.opt1);
-            appendInfo('infoOpt2', 'Medical/Allergies', contact.opt2);
-            appendInfo('infoOpt3', 'Additional Notes', contact.opt3);
             
             if (hasExtraInfo) document.getElementById('infoSection').style.display = "block";
 
-            if (contact.phone) {
-              ownerPhoneCache = contact.phone;
+            if (contact.phone && String(contact.phone).trim() !== "") {
+              ownerPhoneCache = String(contact.phone);
               let callBtn = document.getElementById('callBtn');
-              callBtn.href = "tel:" + contact.phone;
+              callBtn.href = "tel:" + ownerPhoneCache;
               callBtn.innerHTML = "Call " + (contact.ownerName || "Owner"); 
               callBtn.style.display = "block";
               
@@ -589,8 +536,8 @@
               textBtn.style.display = "block";
             }
 
-            if (contact.email) {
-              ownerEmailCache = contact.email;
+            if (contact.email && String(contact.email).trim() !== "") {
+              ownerEmailCache = String(contact.email);
               let emailBtn = document.getElementById('emailBtn');
               emailBtn.innerHTML = "Email " + (contact.ownerName || "Owner");
               emailBtn.style.display = "block";
